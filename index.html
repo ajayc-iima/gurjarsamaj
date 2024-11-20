@@ -157,45 +157,144 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
-            authDomain: "contact-41939.firebaseapp.com",
-            databaseURL: "https://contact-41939-default-rtdb.firebaseio.com",
-            projectId: "contact-41939",
-            storageBucket: "contact-41939.appspot.com",
-            messagingSenderId: "392340324726",
-            appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
-            measurementId: "G-LJQJGKEK9M"
-        };
+        // First, check and log the current domain
+const currentDomain = window.location.hostname;
+console.log("Current domain:", currentDomain);
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+// Firebase Configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
+    authDomain: "contact-41939.firebaseapp.com",
+    databaseURL: "https://contact-41939-default-rtdb.firebaseio.com",
+    projectId: "contact-41939",
+    storageBucket: "contact-41939.appspot.com",
+    messagingSenderId: "392340324726",
+    appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
+    measurementId: "G-LJQJGKEK9M"
+};
 
-        // Authentication state observer
-        auth.onAuthStateChanged(user => {
-            const authButtons = document.getElementById('authButtons');
-            const userProfile = document.getElementById('userProfile');
-            const userEmail = document.getElementById('userEmail');
-            const userPhoto = document.getElementById('userPhoto');
+// Initialize Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+} catch (error) {
+    console.error("Firebase initialization error:", error);
+    showError("Failed to initialize application. Please try again later.");
+}
 
-            if (user) {
-                // User is signed in
-                authButtons.classList.add('hidden');
-                userProfile.classList.remove('hidden');
-                userEmail.textContent = user.email;
-                userPhoto.src = user.photoURL || '/api/placeholder/32/32';
-                hideLoginModal();
-                hideSignupModal();
-            } else {
-                // User is signed out
-                authButtons.classList.remove('hidden');
-                userProfile.classList.add('hidden');
-            }
-        });
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// Helper function to show errors
+function showError(message, isLogin = true) {
+    const errorElement = document.getElementById(isLogin ? 'loginError' : 'signupError');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+    } else {
+        console.error(message);
+    }
+}
+
+// Updated signup function
+async function signUpWithGoogle() {
+    const signupError = document.getElementById('signupError');
+    if (signupError) signupError.classList.add('hidden');
+
+    try {
+        // Log authorization attempt
+        console.log("Attempting signup from domain:", currentDomain);
+        
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+        
+        // Check if user exists
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        
+        if (!userDoc.exists) {
+            await db.collection('users').doc(user.uid).set({
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                domain: currentDomain // Store the domain for debugging
+            });
+        } else {
+            await auth.signOut();
+            showError('Account already exists. Please login instead.', false);
+        }
+    } catch (error) {
+        console.error('Signup error:', error);
+        console.log('Error code:', error.code);
+        console.log('Error message:', error.message);
+        
+        let errorMessage = 'An error occurred during sign up.';
+        
+        if (error.code === 'auth/unauthorized-domain') {
+            errorMessage = `This domain (${currentDomain}) is not authorized. Please contact the administrator.`;
+        }
+        
+        showError(errorMessage, false);
+    }
+}
+
+// Updated login function
+async function loginWithGoogle() {
+    const loginError = document.getElementById('loginError');
+    if (loginError) loginError.classList.add('hidden');
+
+    try {
+        // Log authorization attempt
+        console.log("Attempting login from domain:", currentDomain);
+        
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+        
+        // Verify user exists
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        
+        if (!userDoc.exists) {
+            await auth.signOut();
+            showError('Account not found. Please sign up first.');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        console.log('Error code:', error.code);
+        console.log('Error message:', error.message);
+        
+        let errorMessage = 'An error occurred during login.';
+        
+        if (error.code === 'auth/unauthorized-domain') {
+            errorMessage = `This domain (${currentDomain}) is not authorized. Please contact the administrator.`;
+        }
+        
+        showError(errorMessage);
+    }
+}
+
+// Auth state observer
+auth.onAuthStateChanged(user => {
+    console.log("Auth state changed. User:", user ? user.email : 'signed out');
+    
+    const authButtons = document.getElementById('authButtons');
+    const userProfile = document.getElementById('userProfile');
+    const userEmail = document.getElementById('userEmail');
+    const userPhoto = document.getElementById('userPhoto');
+
+    if (user) {
+        authButtons.classList.add('hidden');
+        userProfile.classList.remove('hidden');
+        userEmail.textContent = user.email;
+        userPhoto.src = user.photoURL || '/api/placeholder/32/32';
+        hideLoginModal();
+        hideSignupModal();
+    } else {
+        authButtons.classList.remove('hidden');
+        userProfile.classList.add('hidden');
+    }
+});
 
         // Modal functions
         function showModal(modalId) {
