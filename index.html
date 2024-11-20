@@ -9,209 +9,231 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-    <!-- Previous CSS styles remain the same -->
     <style>
-        /* Your existing styles remain unchanged */
+        .hidden {
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            position: relative;
+            margin: 10% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Previous HTML structure remains unchanged -->
-   <!-- Navigation -->
-    <nav class="bg-white shadow-lg fixed w-full top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-pink-600 flex-shrink-0">Gurjar Samaj Vivah</h1>
-                    <div class="hidden md:ml-10 md:flex md:space-x-8">
-                        <a href="#home" class="nav-link text-gray-900 font-medium">Home</a>
-                        <a href="#features" class="nav-link text-gray-500 hover:text-gray-900">Features</a>
-                        <a href="#testimonials" class="nav-link text-gray-500 hover:text-gray-900">Testimonials</a>
-                        <a href="#contact" class="nav-link text-gray-500 hover:text-gray-900">Contact</a>
+                    <a href="#" class="text-xl font-bold text-gray-800">Gurjar Samaj Vivah</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="authButtons">
+                        <button onclick="showLoginModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Login</button>
+                        <button onclick="showSignupModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Sign Up</button>
                     </div>
-                </div>
-                <div id="authButtons" class="flex items-center space-x-4">
-                    <button onclick="showLoginModal()" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md transition duration-300">Login</button>
-                    <button onclick="showSignupModal()" class="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-md transition duration-300 transform hover:scale-105">Sign Up</button>
-                </div>
-                <div id="userProfile" class="hidden flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
-                        <img id="userPhoto" class="h-8 w-8 rounded-full object-cover border-2 border-pink-200" alt="Profile photo">
+                    <div id="userProfile" class="hidden flex items-center space-x-2">
+                        <img id="userPhoto" class="w-8 h-8 rounded-full" src="https://via.placeholder.com/32" alt="User photo">
                         <span id="userEmail" class="text-gray-700"></span>
+                        <button onclick="logout()" class="text-red-500 hover:text-red-600">Logout</button>
                     </div>
-                    <button onclick="logout()" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md transition duration-300">Logout</button>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="hero-section pt-24 pb-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-            <div class="text-center animate-fade-in">
-                <h2 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                    Find Your Perfect Match in the
-                    <span class="text-pink-600">Gurjar Community</span>
-                </h2>
-                <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                    Join our trusted matrimonial platform specifically designed for the Gurjar community. Connect with compatible matches based on your preferences and values.
-                </p>
-                <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-                    <div class="rounded-md shadow">
-                        <button onclick="showSignupModal()" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 md:py-4 md:text-lg md:px-10 transition duration-300">
-                            Get Started
-                        </button>
-                    </div>
+    <div class="bg-blue-50 py-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">Find Your Perfect Match</h1>
+            <p class="text-xl text-gray-600 mb-8">Join the largest matrimonial platform for Gurjar Samaj</p>
+            <button onclick="showSignupModal()" class="bg-blue-500 text-white px-8 py-3 rounded-lg text-lg hover:bg-blue-600">
+                Get Started
+            </button>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="py-16">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Why Choose Us</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6 bg-white rounded-lg shadow-md">
+                    <div class="text-4xl mb-4">👥</div>
+                    <h3 class="text-xl font-semibold mb-2">Verified Profiles</h3>
+                    <p class="text-gray-600">All profiles are manually verified for authenticity</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-md">
+                    <div class="text-4xl mb-4">🔒</div>
+                    <h3 class="text-xl font-semibold mb-2">Privacy First</h3>
+                    <p class="text-gray-600">Your information is safe and secure with us</p>
+                </div>
+                <div class="text-center p-6 bg-white rounded-lg shadow-md">
+                    <div class="text-4xl mb-4">❤️</div>
+                    <h3 class="text-xl font-semibold mb-2">Success Stories</h3>
+                    <p class="text-gray-600">Thousands of successful marriages</p>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Signup Modal -->
     <div id="signupModal" class="modal">
-        <div class="modal-content bg-white w-full max-w-md mx-auto rounded-lg shadow-xl p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-900">Sign Up</h2>
-                <button onclick="hideSignupModal()" class="text-gray-500 hover:text-gray-700 transition duration-300">&times;</button>
-            </div>
-            <div class="text-center my-4 text-gray-600">Join our community today</div>
-            <button onclick="signUpWithGoogle()" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 transition duration-300">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="h-5 w-5 mr-2">
-                <span class="text-gray-700">Sign up with Google</span>
-            </button>
-            <div id="signupError" class="text-red-500 text-center mt-4 hidden"></div>
+        <div class="modal-content">
+            <button onclick="hideSignupModal()" class="absolute top-2 right-2 text-gray-500">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" class="w-full px-3 py-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" class="w-full px-3 py-2 border rounded" required>
+                </div>
+                <div id="signupError" class="hidden text-red-500 mb-4"></div>
+                <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+                    Sign Up
+                </button>
+                <div class="mt-4 text-center">
+                    <button type="button" onclick="signInWithGoogle()" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50">
+                        Sign up with Google
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Login Modal -->
     <div id="loginModal" class="modal">
-        <div class="modal-content bg-white w-full max-w-md mx-auto rounded-lg shadow-xl p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-900">Login</h2>
-                <button onclick="hideLoginModal()" class="text-gray-500 hover:text-gray-700 transition duration-300">&times;</button>
-            </div>
-            <div class="text-center my-4 text-gray-600">Welcome back</div>
-            <button onclick="loginWithGoogle()" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 transition duration-300">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo" class="h-5 w-5 mr-2">
-                <span class="text-gray-700">Login with Google</span>
-            </button>
-            <div id="loginError" class="text-red-500 text-center mt-4 hidden"></div>
+        <div class="modal-content">
+            <button onclick="hideLoginModal()" class="absolute top-2 right-2 text-gray-500">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">Login</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="w-full px-3 py-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded" required>
+                </div>
+                <div id="loginError" class="hidden text-red-500 mb-4"></div>
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+                    Login
+                </button>
+                <div class="mt-4 text-center">
+                    <button type="button" onclick="signInWithGoogle()" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50">
+                        Login with Google
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
-      // Firebase Configuration and Initialization
-const firebaseConfig = {
-    apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
-    authDomain: "contact-41939.firebaseapp.com",
-    databaseURL: "https://contact-41939-default-rtdb.firebaseio.com",
-    projectId: "contact-41939",
-    storageBucket: "contact-41939.appspot.com",
-    messagingSenderId: "392340324726",
-    appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
-    measurementId: "G-LJQJGKEK9M"
-};
-
-// Initialize Firebase
-try {
-    firebase.initializeApp(firebaseConfig);
-} catch (error) {
-    console.error("Firebase initialization error:", error);
-    showError("Failed to initialize application. Please try again later.");
-}
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-// Authentication Functions
-async function signUpWithGoogle() {
-    const signupError = document.getElementById('signupError');
-    if (signupError) signupError.classList.add('hidden');
-
-    try {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-        
-        // Remove domain restriction check since we'll handle this in Firebase Console
-        const result = await auth.signInWithPopup(googleProvider);
-        const user = result.user;
-
-        // Check for existing user
-        const userDoc = await db.collection('users').doc(user.uid).get();
-
-        if (!userDoc.exists) {
-            await db.collection('users').doc(user.uid).set({
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp({
+                apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
+                authDomain: "contact-41939.firebaseapp.com",
+                projectId: "contact-41939",
+                storageBucket: "contact-41939.appspot.com",
+                messagingSenderId: "392340324726",
+                appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
             });
-            hideSignupModal();
-        } else {
-            await auth.signOut();
-            throw new Error('account-exists');
-        }
-    } catch (error) {
-        console.error('Signup error:', error);
-        let errorMessage = 'An error occurred during sign up.';
-
-        if (error.code === 'auth/unauthorized-domain') {
-            errorMessage = 'Please access the application through contact-41939.firebaseapp.com';
-        } else if (error.message === 'account-exists') {
-            errorMessage = 'Account already exists. Please login instead.';
         }
 
-        showError(errorMessage, false);
-    }
-}
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-async function loginWithGoogle() {
-    const loginError = document.getElementById('loginError');
-    if (loginError) loginError.classList.add('hidden');
-
-    try {
-        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-        
-        // Remove domain restriction check since we'll handle this in Firebase Console
-        const result = await auth.signInWithPopup(googleProvider);
-        const user = result.user;
-
-        const userDoc = await db.collection('users').doc(user.uid).get();
-
-        if (!userDoc.exists) {
-            await auth.signOut();
-            throw new Error('account-not-found');
+        // Modal Functions
+        function showSignupModal() {
+            document.getElementById('signupModal').style.display = 'block';
         }
 
-        await db.collection('users').doc(user.uid).update({
-            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        hideLoginModal();
-    } catch (error) {
-        console.error('Login error:', error);
-        let errorMessage = 'An error occurred during login.';
-
-        if (error.code === 'auth/unauthorized-domain') {
-            errorMessage = 'Please access the application through contact-41939.firebaseapp.com';
-        } else if (error.message === 'account-not-found') {
-            errorMessage = 'Account not found. Please sign up first.';
+        function hideSignupModal() {
+            document.getElementById('signupModal').style.display = 'none';
         }
 
-        showError(errorMessage);
-    }
-}
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+        }
 
-        // Logout Function
-        async function logout() {
-            try {
-                await auth.signOut();
-            } catch (error) {
-                console.error('Logout error:', error);
-                showError('Error logging out. Please try again.');
+        function hideLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        // Error Display Function
+        function showError(message, isLogin = true) {
+            const errorElement = isLogin ? document.getElementById('loginError') : document.getElementById('signupError');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
             }
         }
 
-        // Auth State Observer
+        // Handle Signup
+        async function handleSignup(event) {
+            event.preventDefault();
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                hideSignupModal();
+            } catch (error) {
+                showError(error.message, false);
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                hideLoginModal();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Handle Google Sign In
+        async function signInWithGoogle() {
+            try {
+                await auth.signInWithPopup(googleProvider);
+                hideLoginModal();
+                hideSignupModal();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Handle Logout
+        function logout() {
+            auth.signOut();
+        }
+
+        // Listen for Auth Changes
         auth.onAuthStateChanged(user => {
             const authButtons = document.getElementById('authButtons');
             const userProfile = document.getElementById('userProfile');
@@ -219,27 +241,21 @@ async function loginWithGoogle() {
             const userPhoto = document.getElementById('userPhoto');
 
             if (user) {
-                // User is signed in
                 authButtons.classList.add('hidden');
                 userProfile.classList.remove('hidden');
                 userEmail.textContent = user.email;
-                userPhoto.src = user.photoURL || '/api/placeholder/32/32';
-                hideLoginModal();
-                hideSignupModal();
+                userPhoto.src = user.photoURL || 'https://via.placeholder.com/32';
             } else {
-                // User is signed out
                 authButtons.classList.remove('hidden');
                 userProfile.classList.add('hidden');
             }
         });
 
-        // Smooth scroll for navigation
+        // Smooth Scrolling
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
             });
         });
     </script>
