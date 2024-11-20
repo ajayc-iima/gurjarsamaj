@@ -99,168 +99,107 @@
     </div>
 
     <script>
-        // Firebase Configuration and Initialization
-        const firebaseConfig = {
-            apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
-            authDomain: "contact-41939.firebaseapp.com",
-            databaseURL: "https://contact-41939-default-rtdb.firebaseio.com",
-            projectId: "contact-41939",
-            storageBucket: "contact-41939.appspot.com",
-            messagingSenderId: "392340324726",
-            appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
-            measurementId: "G-LJQJGKEK9M"
-        };
+      // Firebase Configuration and Initialization
+const firebaseConfig = {
+    apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
+    authDomain: "contact-41939.firebaseapp.com",
+    databaseURL: "https://contact-41939-default-rtdb.firebaseio.com",
+    projectId: "contact-41939",
+    storageBucket: "contact-41939.appspot.com",
+    messagingSenderId: "392340324726",
+    appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
+    measurementId: "G-LJQJGKEK9M"
+};
 
-        // Initialize Firebase
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch (error) {
-            console.error("Firebase initialization error:", error);
-            showError("Failed to initialize application. Please try again later.");
+// Initialize Firebase
+try {
+    firebase.initializeApp(firebaseConfig);
+} catch (error) {
+    console.error("Firebase initialization error:", error);
+    showError("Failed to initialize application. Please try again later.");
+}
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+// Authentication Functions
+async function signUpWithGoogle() {
+    const signupError = document.getElementById('signupError');
+    if (signupError) signupError.classList.add('hidden');
+
+    try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        
+        // Remove domain restriction check since we'll handle this in Firebase Console
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+
+        // Check for existing user
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+            await db.collection('users').doc(user.uid).set({
+                email: user.email,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            hideSignupModal();
+        } else {
+            await auth.signOut();
+            throw new Error('account-exists');
+        }
+    } catch (error) {
+        console.error('Signup error:', error);
+        let errorMessage = 'An error occurred during sign up.';
+
+        if (error.code === 'auth/unauthorized-domain') {
+            errorMessage = 'Please access the application through contact-41939.firebaseapp.com';
+        } else if (error.message === 'account-exists') {
+            errorMessage = 'Account already exists. Please login instead.';
         }
 
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        showError(errorMessage, false);
+    }
+}
 
-        // Error Handling
-        function showError(message, isLogin = true) {
-            const errorDiv = document.getElementById(isLogin ? 'loginError' : 'signupError');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.classList.remove('hidden');
-            }
-            console.error(message);
+async function loginWithGoogle() {
+    const loginError = document.getElementById('loginError');
+    if (loginError) loginError.classList.add('hidden');
+
+    try {
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        
+        // Remove domain restriction check since we'll handle this in Firebase Console
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+
+        const userDoc = await db.collection('users').doc(user.uid).get();
+
+        if (!userDoc.exists) {
+            await auth.signOut();
+            throw new Error('account-not-found');
         }
 
-        // Modal Functions
-        function showModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                document.body.style.overflow = 'hidden';
-                modal.classList.add('active');
-            }
+        await db.collection('users').doc(user.uid).update({
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        hideLoginModal();
+    } catch (error) {
+        console.error('Login error:', error);
+        let errorMessage = 'An error occurred during login.';
+
+        if (error.code === 'auth/unauthorized-domain') {
+            errorMessage = 'Please access the application through contact-41939.firebaseapp.com';
+        } else if (error.message === 'account-not-found') {
+            errorMessage = 'Account not found. Please sign up first.';
         }
 
-        function hideModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                document.body.style.overflow = '';
-                modal.classList.remove('active');
-            }
-        }
-
-        function showSignupModal() {
-            hideModal('loginModal');
-            showModal('signupModal');
-        }
-
-        function hideSignupModal() {
-            hideModal('signupModal');
-        }
-
-        function showLoginModal() {
-            hideModal('signupModal');
-            showModal('loginModal');
-        }
-
-        function hideLoginModal() {
-            hideModal('loginModal');
-        }
-
-        // Authentication Functions
-        async function signUpWithGoogle() {
-            const signupError = document.getElementById('signupError');
-            if (signupError) signupError.classList.add('hidden');
-
-            try {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                const currentDomain = window.location.hostname;
-
-                // Allow localhost and deployed domain
-                if (!currentDomain.includes('localhost') && 
-                    !currentDomain.includes('127.0.0.1') && 
-                    !currentDomain.includes(firebaseConfig.authDomain)) {
-                    throw new Error('unauthorized-domain');
-                }
-
-                const result = await auth.signInWithPopup(googleProvider);
-                const user = result.user;
-
-                // Check for existing user
-                const userDoc = await db.collection('users').doc(user.uid).get();
-
-                if (!userDoc.exists) {
-                    await db.collection('users').doc(user.uid).set({
-                        email: user.email,
-                        displayName: user.displayName,
-                        photoURL: user.photoURL,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLoginDomain: currentDomain
-                    });
-                    hideSignupModal();
-                } else {
-                    await auth.signOut();
-                    throw new Error('account-exists');
-                }
-            } catch (error) {
-                console.error('Signup error:', error);
-                let errorMessage = 'An error occurred during sign up.';
-
-                if (error.message === 'unauthorized-domain') {
-                    errorMessage = `Please access the application through ${firebaseConfig.authDomain}`;
-                } else if (error.message === 'account-exists') {
-                    errorMessage = 'Account already exists. Please login instead.';
-                }
-
-                showError(errorMessage, false);
-            }
-        }
-
-        async function loginWithGoogle() {
-            const loginError = document.getElementById('loginError');
-            if (loginError) loginError.classList.add('hidden');
-
-            try {
-                await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                const currentDomain = window.location.hostname;
-
-                // Allow localhost and deployed domain
-                if (!currentDomain.includes('localhost') && 
-                    !currentDomain.includes('127.0.0.1') && 
-                    !currentDomain.includes(firebaseConfig.authDomain)) {
-                    throw new Error('unauthorized-domain');
-                }
-
-                const result = await auth.signInWithPopup(googleProvider);
-                const user = result.user;
-
-                const userDoc = await db.collection('users').doc(user.uid).get();
-
-                if (!userDoc.exists) {
-                    await auth.signOut();
-                    throw new Error('account-not-found');
-                }
-
-                await db.collection('users').doc(user.uid).update({
-                    lastLoginDomain: currentDomain,
-                    lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                hideLoginModal();
-            } catch (error) {
-                console.error('Login error:', error);
-                let errorMessage = 'An error occurred during login.';
-
-                if (error.message === 'unauthorized-domain') {
-                    errorMessage = `Please access the application through ${firebaseConfig.authDomain}`;
-                } else if (error.message === 'account-not-found') {
-                    errorMessage = 'Account not found. Please sign up first.';
-                }
-
-                showError(errorMessage);
-            }
-        }
+        showError(errorMessage);
+    }
+}
 
         // Logout Function
         async function logout() {
