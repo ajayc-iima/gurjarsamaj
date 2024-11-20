@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gurjar Samaj Vivah Platform</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none; }
         .modal {
             display: none;
             position: fixed;
@@ -48,7 +45,6 @@
                         <button onclick="showSignupModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Sign Up</button>
                     </div>
                     <div id="userProfile" class="hidden flex items-center space-x-2">
-                        <img id="userPhoto" class="w-8 h-8 rounded-full" src="https://via.placeholder.com/32" alt="User photo">
                         <span id="userEmail" class="text-gray-700"></span>
                         <button onclick="logout()" class="text-red-500 hover:text-red-600">Logout</button>
                     </div>
@@ -68,100 +64,73 @@
         </div>
     </div>
 
-    <!-- Features Section -->
-    <div class="py-16">
-        <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Why Choose Us</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center p-6 bg-white rounded-lg shadow-md">
-                    <div class="text-4xl mb-4">👥</div>
-                    <h3 class="text-xl font-semibold mb-2">Verified Profiles</h3>
-                    <p class="text-gray-600">All profiles are manually verified for authenticity</p>
-                </div>
-                <div class="text-center p-6 bg-white rounded-lg shadow-md">
-                    <div class="text-4xl mb-4">🔒</div>
-                    <h3 class="text-xl font-semibold mb-2">Privacy First</h3>
-                    <p class="text-gray-600">Your information is safe and secure with us</p>
-                </div>
-                <div class="text-center p-6 bg-white rounded-lg shadow-md">
-                    <div class="text-4xl mb-4">❤️</div>
-                    <h3 class="text-xl font-semibold mb-2">Success Stories</h3>
-                    <p class="text-gray-600">Thousands of successful marriages</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Signup Modal -->
     <div id="signupModal" class="modal">
         <div class="modal-content">
             <button onclick="hideSignupModal()" class="absolute top-2 right-2 text-gray-500">&times;</button>
             <h2 class="text-2xl font-bold mb-4">Sign Up</h2>
-            <form id="signupForm" onsubmit="handleSignup(event)">
+            <form id="signupForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="signupName">Full Name</label>
+                    <input type="text" id="signupName" class="w-full px-3 py-2 border rounded" required>
+                </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2" for="signupEmail">Email</label>
                     <input type="email" id="signupEmail" class="w-full px-3 py-2 border rounded" required>
                 </div>
                 <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="signupMobile">Mobile Number</label>
+                    <input type="tel" id="signupMobile" pattern="[0-9]{10}" class="w-full px-3 py-2 border rounded" required placeholder="Enter 10 digit mobile number">
+                </div>
+                <div class="mb-4">
                     <label class="block text-gray-700 mb-2" for="signupPassword">Password</label>
                     <input type="password" id="signupPassword" class="w-full px-3 py-2 border rounded" required>
                 </div>
+                <div id="recaptcha-container" class="mb-4"></div>
+                <div id="otpSection" class="mb-4 hidden">
+                    <label class="block text-gray-700 mb-2" for="otpInput">Enter OTP</label>
+                    <input type="text" id="otpInput" pattern="[0-9]{6}" class="w-full px-3 py-2 border rounded" placeholder="Enter 6 digit OTP">
+                    <button type="button" onclick="resendOTP()" class="text-blue-500 text-sm mt-2">Resend OTP</button>
+                </div>
                 <div id="signupError" class="hidden text-red-500 mb-4"></div>
-                <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
-                    Sign Up
+                <button type="button" id="signupButton" onclick="handleSignup()" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
+                    Send OTP
                 </button>
-                <div class="mt-4 text-center">
-                    <button type="button" onclick="signInWithGoogle()" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50">
-                        Sign up with Google
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <button onclick="hideLoginModal()" class="absolute top-2 right-2 text-gray-500">&times;</button>
-            <h2 class="text-2xl font-bold mb-4">Login</h2>
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2" for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" class="w-full px-3 py-2 border rounded" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2" for="loginPassword">Password</label>
-                    <input type="password" id="loginPassword" class="w-full px-3 py-2 border rounded" required>
-                </div>
-                <div id="loginError" class="hidden text-red-500 mb-4"></div>
-                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-                    Login
-                </button>
-                <div class="mt-4 text-center">
-                    <button type="button" onclick="signInWithGoogle()" class="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded hover:bg-gray-50">
-                        Login with Google
-                    </button>
-                </div>
             </form>
         </div>
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
+            authDomain: "contact-41939.firebaseapp.com",
+            projectId: "contact-41939",
+            storageBucket: "contact-41939.appspot.com",
+            messagingSenderId: "392340324726",
+            appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
+        };
+
         // Initialize Firebase
         if (!firebase.apps.length) {
-            firebase.initializeApp({
-                apiKey: "AIzaSyA3Tb-ia3Po1BIZqZ2Jhy9pXxuwlKI874g",
-                authDomain: "contact-41939.firebaseapp.com",
-                projectId: "contact-41939",
-                storageBucket: "contact-41939.appspot.com",
-                messagingSenderId: "392340324726",
-                appId: "1:392340324726:web:4f94aa39dc7b926a003a57",
-            });
+            firebase.initializeApp(firebaseConfig);
         }
 
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        let confirmationResult = null;
+
+        // Recaptcha Verifier
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+            'size': 'normal',
+            'callback': (response) => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber
+            },
+            'expired-callback': () => {
+                // Response expired. Ask user to solve reCAPTCHA again.
+                window.recaptchaVerifier.reset();
+            }
+        });
 
         // Modal Functions
         function showSignupModal() {
@@ -170,65 +139,99 @@
 
         function hideSignupModal() {
             document.getElementById('signupModal').style.display = 'none';
+            resetSignupForm();
         }
 
-        function showLoginModal() {
-            document.getElementById('loginModal').style.display = 'block';
-        }
-
-        function hideLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
+        function resetSignupForm() {
+            document.getElementById('signupForm').reset();
+            document.getElementById('otpSection').classList.add('hidden');
+            document.getElementById('signupButton').textContent = 'Send OTP';
+            document.getElementById('signupError').classList.add('hidden');
+            confirmationResult = null;
         }
 
         // Error Display Function
-        function showError(message, isLogin = true) {
-            const errorElement = isLogin ? document.getElementById('loginError') : document.getElementById('signupError');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.classList.remove('hidden');
+        function showError(message) {
+            const errorElement = document.getElementById('signupError');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        // Send OTP Function
+        async function sendOTP() {
+            const phoneNumber = document.getElementById('signupMobile').value;
+            const formattedPhoneNumber = '+91' + phoneNumber; // Adjust country code as needed
+
+            try {
+                // Reset any previous recaptcha
+                window.recaptchaVerifier.reset();
+                
+                // Send OTP
+                confirmationResult = await auth.signInWithPhoneNumber(formattedPhoneNumber, window.recaptchaVerifier);
+                
+                // Show OTP input section
+                document.getElementById('otpSection').classList.remove('hidden');
+                document.getElementById('signupButton').textContent = 'Verify OTP';
+                document.getElementById('signupError').classList.add('hidden');
+                
+                alert('OTP sent successfully!');
+            } catch (error) {
+                console.error('OTP Send Error:', error);
+                showError(error.message || 'Failed to send OTP. Please try again.');
             }
         }
 
         // Handle Signup
-        async function handleSignup(event) {
-            event.preventDefault();
+        async function handleSignup() {
+            const otpInput = document.getElementById('otpInput');
+            
+            // If OTP not sent yet, send OTP
+            if (!confirmationResult) {
+                sendOTP();
+                return;
+            }
+
+            // Verify OTP
+            const otpCode = otpInput.value;
             const email = document.getElementById('signupEmail').value;
+            const name = document.getElementById('signupName').value;
+            const mobile = document.getElementById('signupMobile').value;
             const password = document.getElementById('signupPassword').value;
 
             try {
-                await auth.createUserWithEmailAndPassword(email, password);
+                // Verify OTP
+                const userCredential = await confirmationResult.confirm(otpCode);
+                
+                // Create user with email and password
+                const createdUser = await auth.createUserWithEmailAndPassword(email, password);
+                
+                // Store additional user information in Firestore
+                await db.collection('users').doc(createdUser.user.uid).set({
+                    name: name,
+                    email: email,
+                    mobile: mobile,
+                    phoneVerified: true,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                // Hide signup modal and reset form
                 hideSignupModal();
+                
+                alert('Account created successfully!');
             } catch (error) {
-                showError(error.message, false);
+                console.error('Signup Error:', error);
+                showError(error.message || 'Failed to create account. Please try again.');
             }
         }
 
-        // Handle Login
-        async function handleLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                hideLoginModal();
-            } catch (error) {
-                showError(error.message);
-            }
+        // Resend OTP Function
+        function resendOTP() {
+            // Recreate recaptcha verifier
+            window.recaptchaVerifier.reset();
+            sendOTP();
         }
 
-        // Handle Google Sign In
-        async function signInWithGoogle() {
-            try {
-                await auth.signInWithPopup(googleProvider);
-                hideLoginModal();
-                hideSignupModal();
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        // Handle Logout
+        // Logout Function
         function logout() {
             auth.signOut();
         }
@@ -238,25 +241,15 @@
             const authButtons = document.getElementById('authButtons');
             const userProfile = document.getElementById('userProfile');
             const userEmail = document.getElementById('userEmail');
-            const userPhoto = document.getElementById('userPhoto');
 
             if (user) {
                 authButtons.classList.add('hidden');
                 userProfile.classList.remove('hidden');
                 userEmail.textContent = user.email;
-                userPhoto.src = user.photoURL || 'https://via.placeholder.com/32';
             } else {
                 authButtons.classList.remove('hidden');
                 userProfile.classList.add('hidden');
             }
-        });
-
-        // Smooth Scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-            });
         });
     </script>
 </body>
